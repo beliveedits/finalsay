@@ -1,0 +1,9 @@
+{
+  "name": "finalsay-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference MCP server for Finalsay. Reads leads and queues suggestions; never applies them.",
+  "license": "MIT",
+  "bin": { "finalsay-mcp": "server.js" },
+  "engines": { "node": ">=20" }
+}
