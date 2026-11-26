@@ -1,0 +1,9 @@
+node_modules/
+.clasp.json
+.clasprc.json
+.env
+*.zip
+.DS_Store
+# private working files, never published
+OWNER-NOTES.md
+launch/

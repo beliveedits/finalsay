@@ -1,0 +1,16 @@
+{
+  "name": "finalsay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A CRM that lives in your own Google account. AI proposes, you approve.",
+  "license": "MIT",
+  "author": "Bhavesh Vaghela",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "for f in src/*.gs; do node --check - < \"$f\" || exit 1; done && node --check src/Core.js && echo \"syntax ok\"",
+    "build": "node tools/bundle.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
