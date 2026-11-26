@@ -1,4 +1,9 @@
-<p><img src="brand/logo/finalsay-lockup.svg" alt="Finalsay" width="280"></p>
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/logo/finalsay-lockup-reversed.svg">
+    <img src="brand/logo/finalsay-lockup.svg" alt="Finalsay" width="280">
+  </picture>
+</p>
 
 # The CRM that lives in your Google account
 
