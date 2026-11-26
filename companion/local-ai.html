@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finalsay local AI (experimental)</title>
+<!--
+  Finalsay: companion/local-ai.html. EXPERIMENTAL. NOT VERIFIED LIVE.
+
+  One static page, no build step, no libraries, nothing loaded from another site. It needs
+  src/Core.js beside it (it looks for ../src/Core.js, then ./Core.js).
+
+  What it does: asks a model running on YOUR computer (Ollama, or Chrome's built-in model) to
+  suggest a next move for one lead, shows you the suggestion, and, when you click, sends it to the
+  Approvals queue of your Sheet. It cannot apply anything. The Sheet decides after a person approves.
+
+  What it stores: nothing. The web app address and the token live in this tab's memory and are gone
+  when you close it.
+-->
+<style>
+:root { --paper: #F6F7F9; --sheet: #FFFFFF; --text: #121628; --muted: #5A6070; --ink: #2438C8; --on-ink: #FFFFFF; --pencil: #7A8090; --rule: #DADDE4; --bad: #B4311A; --wash: #E9ECFB; }
+@media (prefers-color-scheme: dark) { :root { --paper: #0F1220; --sheet: #171B2E; --text: #ECEEF6; --muted: #A3AABB; --ink: #9DABFF; --on-ink: #0F1220; --pencil: #8E95A8; --rule: #2B3049; --bad: #FF9E8A; --wash: #1D2447; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--text); font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.7rem; line-height: 1.15; margin: 0 0 8px; font-weight: 800; }
+h2 { font-size: 1.15rem; margin: 40px 0 8px; font-weight: 800; }
+p { margin: 0 0 12px; max-width: 64ch; }
+.muted { color: var(--muted); }
+.note { border: 1.5px dashed var(--pencil); padding: 12px 14px; background: var(--sheet); }
+label { display: block; font-weight: 700; margin: 14px 0 4px; }
+input[type=text], input[type=url], input[type=password] { width: 100%; font: inherit; color: inherit; background: var(--sheet); border: 1.5px solid var(--rule); border-radius: 3px; padding: 9px 10px; min-height: 44px; }
+fieldset { border: 0; padding: 0; margin: 0; }
+legend { font-weight: 700; padding: 0; margin: 14px 0 4px; }
+.radio { display: flex; gap: 8px; align-items: baseline; font-weight: 400; margin: 4px 0; }
+.btn { font: inherit; font-weight: 700; min-height: 44px; padding: 8px 16px; border-radius: 3px; border: 1.5px solid var(--ink); background: var(--ink); color: var(--on-ink); cursor: pointer; margin-top: 12px; }
+.btn.quiet { background: transparent; color: var(--text); border-color: var(--rule); font-weight: 500; }
+.btn[disabled] { opacity: .55; cursor: progress; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.msg { min-height: 1.5em; margin-top: 10px; }
+.msg.bad { color: var(--bad); font-weight: 700; }
+ul.list { list-style: none; padding: 0; margin: 8px 0 0; background: var(--sheet); border: 1.5px solid var(--rule); }
+ul.list li { padding: 12px 14px; border-top: 1.5px solid var(--rule); display: grid; gap: 4px; }
+ul.list li:first-child { border-top: 0; }
+.who { font-weight: 700; }
+.prop { border: 1.5px dashed var(--pencil); background: var(--sheet); padding: 12px 14px; margin-top: 10px; display: grid; gap: 8px; }
+.prop.queued { border-style: solid; border-color: var(--ink); background: var(--wash); }
+.prop .what { font-weight: 500; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--sheet); border: 1.5px solid var(--rule); padding: 10px; font-size: .9rem; max-height: 240px; overflow: auto; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Finalsay local AI</h1>
+  <p class="muted">Experimental. Not verified on a live setup yet.</p>
+  <p>This page asks a model running on your own computer to suggest a next move for a lead. You read the suggestion. If you click "Queue for approval", it goes to the Approvals tab of your Sheet and waits there. Nothing is applied from this page, and nothing is ever sent to a client.</p>
+  <p class="note">Small local models make things up. They may say "I have emailed the client" when they did nothing. Finalsay ignores such claims. It only reads four fields from the model's answer: a stage, a next step, a number of days and a draft reply.</p>
+
+  <h2>1. Your Sheet</h2>
+  <label for="url">Web app address</label>
+  <input id="url" type="url" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/.../exec">
+  <label for="token">API token</label>
+  <input id="token" type="password" autocomplete="off" spellcheck="false">
+  <p class="muted" style="margin-top:6px">From CRM &gt; More &gt; New API token. This page keeps it in memory only. Whoever has this token can read the leads and their recent emails, so do not paste it on a shared computer.</p>
+
+  <h2>2. Your model</h2>
+  <fieldset>
+    <legend>Where the model runs</legend>
+    <label class="radio"><input type="radio" name="engine" value="ollama" checked> Ollama on this computer</label>
+    <label class="radio" id="chrome-opt" hidden><input type="radio" name="engine" value="chrome"> The model built into Chrome <span class="muted" id="chrome-state"></span></label>
+  </fieldset>
+  <div id="ollama-box">
+    <label for="ollama">Ollama address</label>
+    <input id="ollama" type="url" value="http://localhost:11434" autocomplete="off" spellcheck="false">
+    <label for="model">Model name</label>
+    <input id="model" type="text" autocomplete="off" spellcheck="false" placeholder="a name from: ollama list">
+    <button class="btn quiet" id="models" type="button">Show my models</button>
+    <p class="msg muted" id="models-out" role="status" aria-live="polite"></p>
+  </div>
+
+  <h2>3. Leads that need you</h2>
+  <button class="btn" id="load" type="button">Load from my Sheet</button>
+  <button class="btn quiet" id="sample" type="button">Try with made-up data</button>
+  <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  <ul class="list" id="leads" hidden></ul>
+
+  <section id="result" hidden aria-labelledby="result-h">
+    <h2 id="result-h">Suggestion</h2>
+    <div id="props"></div>
+    <details style="margin-top:14px"><summary>What the model actually wrote</summary><pre id="raw"></pre></details>
+  </section>
+
+  <h2>If it does not connect</h2>
+  <p><strong>Ollama.</strong> A page opened as a file, or served from <code>localhost</code>, is normally allowed. If this page is hosted somewhere else, start Ollama with that site allowed, for example <code>OLLAMA_ORIGINS=https://your-site.example ollama serve</code>, and allow the browser's "access devices on your local network" prompt when it appears.</p>
+  <p><strong>Chrome's built-in model.</strong> The option only appears when your Chrome offers it. Google's documentation lists desktop Chrome only, about 22 GB of free disk space, and either a graphics card with more than 4 GB of memory or 16 GB of RAM with 4 cores. The first use downloads the model.</p>
+  <p><strong>Your Sheet.</strong> The web app must be deployed with "Execute as: Me" and "Who has access: Anyone", and an API token must exist. See SETUP.md, "Local AI page".</p>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var SAMPLE = false;
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = String(text); return n; }
+  function say(text, bad) { var m = $('msg'); m.textContent = text || ''; m.className = 'msg' + (bad ? ' bad' : ''); }
+  function busy(on) { Array.prototype.forEach.call(document.querySelectorAll('button'), function (b) { b.disabled = on; }); }
+  function engine() { return document.querySelector('input[name=engine]:checked').value; }
+
+  // ---- load Core.js (the same parsing code the Sheet uses) ----
+  function loadCore(paths, done) {
+    if (typeof CRM !== 'undefined') return done(true);
+    if (!paths.length) return done(false);
+    var s = document.createElement('script');
+    s.src = paths[0];
+    s.onload = function () { done(typeof CRM !== 'undefined'); };
+    s.onerror = function () { loadCore(paths.slice(1), done); };
+    document.head.appendChild(s);
+  }
+
+  // ---- the Sheet ----
+  var URL_OK = /^https:\/\/script\.google\.com\/(a\/macros\/[^\/\s]+|macros)\/s\/[A-Za-z0-9_\-]+\/exec$/;
+  function sheet(payload) {
+    if (SAMPLE) return Promise.resolve(sampleSheet(payload));
+    var url = $('url').value.trim(), token = $('token').value.trim();
+    if (!URL_OK.test(url)) return Promise.reject(new Error('The web app address should look like https://script.google.com/macros/s/.../exec'));
+    if (!token) return Promise.reject(new Error('Paste the API token first.'));
+    payload.token = token;
+    // text/plain keeps this a "simple" request, so the browser does not send a preflight Apps Script cannot answer
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow', credentials: 'omit' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j || !j.ok) throw new Error('The Sheet said: ' + ((j && j.error) || 'no answer')); return j; });
+  }
+
+  // ---- the model ----
+  function ollamaBase() {
+    var u;
+    try { u = new URL($('ollama').value.trim()); } catch (e) { throw new Error('The Ollama address is not a valid address.'); }
+    if (['localhost', '127.0.0.1', '[::1]'].indexOf(u.hostname) < 0) throw new Error('For safety this page only talks to Ollama on this computer (localhost).');
+    return u.origin;
+  }
+  function askOllama(prompt) {
+    var model = $('model').value.trim();
+    if (!model) return Promise.reject(new Error('Type a model name. "Show my models" lists what you have.'));
+    return fetch(ollamaBase() + '/api/generate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: model, prompt: prompt, stream: false, format: 'json', options: { temperature: 0.2 } })
+    }).then(function (r) { if (!r.ok) throw new Error('Ollama answered with HTTP ' + r.status + '.'); return r.json(); })
+      .then(function (j) { return String((j && j.response) || ''); });
+  }
+  var LM_OPTS = { expectedInputs: [{ type: 'text', languages: ['en'] }], expectedOutputs: [{ type: 'text', languages: ['en'] }] };
+  function askChrome(prompt) {
+    return LanguageModel.availability(LM_OPTS).then(function (a) {
+      if (a === 'unavailable') throw new Error('Chrome says its built-in model is not available on this device.');
+      return LanguageModel.create(LM_OPTS);
+    }).then(function (session) {
+      return session.prompt(prompt).then(function (text) { try { session.destroy(); } catch (e) { /* ignore */ } return String(text || ''); });
+    });
+  }
+  function ask(prompt) {
+    if (SAMPLE) return Promise.resolve('Done! I have emailed the client and marked the deal as Won.\n{"stage":"Talking","next_step":"Send two style frames","next_in_days":2,"reply_draft":"Hi Tobias, thanks for the details. I can send two style frames by Friday. Does that work?","reason":"He asked what the video could look like"}');
+    return engine() === 'chrome' ? askChrome(prompt) : askOllama(prompt);
+  }
+
+  // ---- drawing ----
+  function showLeads(list) {
+    var ul = $('leads'); ul.textContent = ''; ul.hidden = false;
+    if (!list.length) { ul.appendChild(el('li', 'muted', 'Nobody needs you today.')); return; }
+    list.forEach(function (l) {
+      var li = el('li');
+      li.appendChild(el('span', 'who', l.name));
+      li.appendChild(el('span', 'muted', l.stage + '. ' + l.why));
+      var b = el('button', 'btn quiet', 'Draft a suggestion'); b.type = 'button';
+      b.setAttribute('aria-label', 'Draft a suggestion for ' + l.name);
+      b.addEventListener('click', function () { suggest(l); });
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+  }
+  function showProposals(lead, proposals, raw) {
+    $('result').hidden = false;
+    $('result-h').textContent = 'Suggestion for ' + lead.name;
+    $('raw').textContent = raw;
+    var box = $('props'); box.textContent = '';
+    if (!proposals.length) { box.appendChild(el('p', 'muted', 'The model had nothing to suggest.')); return; }
+    proposals.forEach(function (p) {
+      var card = el('div', 'prop');
+      card.appendChild(el('div', 'what', CRM.describeProposal(p)));
+      if (p.payload.reason) card.appendChild(el('div', 'muted', 'Why: ' + p.payload.reason));
+      var b = el('button', 'btn', 'Queue for approval'); b.type = 'button';
+      b.addEventListener('click', function () {
+        busy(true);
+        sheet({ action: 'propose', leadId: lead.id, type: p.type, payload: p.payload }).then(function () {
+          busy(false); card.className = 'prop queued'; b.remove();
+          card.appendChild(el('div', 'who', 'Waiting in the Approvals tab. Nothing has changed yet.'));
+        }).catch(function (e) { busy(false); say(e.message + ' Nothing was queued.', true); });
+      });
+      card.appendChild(b);
+      box.appendChild(card);
+    });
+    $('result').scrollIntoView({ block: 'nearest' });
+  }
+
+  function suggest(l) {
+    busy(true); say('Reading the thread for ' + l.name + '…');
+    var ctx;
+    sheet({ action: 'context', leadId: l.id }).then(function (c) {
+      ctx = c;
+      say('Asking the model. This can take a minute on a laptop…');
+      return ask(CRM.buildSuggestionPrompt({ myName: c.myName, leadName: c.lead.name, stage: c.lead.stage, messages: c.messages }));
+    }).then(function (text) {
+      busy(false);
+      var r = CRM.parseSuggestion(text);
+      if (!r.ok) { $('result').hidden = false; $('raw').textContent = text; $('props').textContent = ''; say('The model did not give a usable answer (' + r.error + '). Nothing was queued.', true); return; }
+      var today = CRM.isoToLocalDate(ctx.today) || new Date();
+      showProposals(ctx.lead, CRM.suggestionToProposals(r.data, ctx.lead, today, 'local-'), text);
+      say('Read the suggestion below. Nothing has been queued yet.');
+    }).catch(function (e) { busy(false); say(e.message + ' Nothing was queued.', true); });
+  }
+
+  // ---- made-up data so the page can be tried without a Sheet or a model ----
+  function sampleSheet(p) {
+    if (p.action === 'today') return { ok: true, today: [
+      { id: 'L-0002', name: 'Tobias Lindqvist', stage: 'New', why: 'They wrote 2 days ago, you have not replied', nextStep: '' },
+      { id: 'L-0003', name: 'Aiko Tanabe', stage: 'Quote sent', why: 'Quote sent 6 days ago, no answer', nextStep: '' }] };
+    if (p.action === 'context') return { ok: true, myName: 'Bhavesh', today: '2026-11-26',
+      lead: { id: p.leadId, name: p.leadId === 'L-0003' ? 'Aiko Tanabe' : 'Tobias Lindqvist', stage: 'New', company: '', wants: '', nextStep: '' },
+      messages: [{ dir: 'in', date: '2026-11-24', text: 'Hi, we are launching an app in January and need a 20 second preview video. What could it look like?' }] };
+    return { ok: true, status: 'Pending' };
+  }
+
+  // ---- wiring ----
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=engine]'), function (r) {
+    r.addEventListener('change', function () { $('ollama-box').hidden = engine() !== 'ollama'; });
+  });
+  if (typeof LanguageModel !== 'undefined') {
+    $('chrome-opt').hidden = false;
+    LanguageModel.availability(LM_OPTS).then(function (a) { $('chrome-state').textContent = '(' + a + ')'; }).catch(function () { $('chrome-state').textContent = '(could not check)'; });
+  }
+  $('models').addEventListener('click', function () {
+    var out = $('models-out'); out.textContent = 'Asking Ollama…';
+    var base;
+    try { base = ollamaBase(); } catch (e) { out.textContent = e.message; return; }
+    fetch(base + '/api/tags').then(function (r) { return r.json(); }).then(function (j) {
+      var names = ((j && j.models) || []).map(function (m) { return m.name; });
+      out.textContent = names.length ? 'You have: ' + names.join(', ') : 'Ollama is running but has no models yet.';
+      if (names.length && !$('model').value) $('model').value = names[0];
+    }).catch(function () { out.textContent = 'Could not reach Ollama at that address. Is it running? See "If it does not connect" below.'; });
+  });
+  function load(sample) {
+    SAMPLE = sample; busy(true); say('Loading…'); $('result').hidden = true;
+    loadCore(['../src/Core.js', './Core.js'], function (ok) {
+      if (!ok) { busy(false); return say('Core.js was not found. Keep this page inside the Finalsay folder, or put a copy of src/Core.js next to it.', true); }
+      sheet({ action: 'today' }).then(function (j) { busy(false); showLeads(j.today || []); say(sample ? 'Made-up people and a canned model answer. Nothing leaves this page.' : ''); })
+        .catch(function (e) { busy(false); say(e.message, true); });
+    });
+  }
+  $('load').addEventListener('click', function () { load(false); });
+  $('sample').addEventListener('click', function () { load(true); });
+})();
+</script>
+</body>
+</html>
