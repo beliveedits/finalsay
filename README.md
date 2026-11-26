@@ -49,7 +49,7 @@ What never happens at all: sending an email. No file in `src/` contains a send c
 
 ## Install
 
-**Option A, copy a template Sheet.** Not available yet.
+**Option A, copy a template Sheet.** [Make a copy](https://docs.google.com/spreadsheets/d/1jbdAclzRHwDlG3_HTqy22Lj9X7BOMD6DRSLsGFZrvhU/copy). The script comes along with the copy, so there is no pasting. Reload your copy, then choose **CRM > Set up**. The template was made on 27 Nov 2026 and checked as far as the copy being made and the CRM menu appearing. **CRM > Set up has not been run on a copy yet.**
 
 **Option B, paste the script.** About ten minutes, no tools needed. Follow [SETUP.md](SETUP.md).
 
