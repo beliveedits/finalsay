@@ -2,9 +2,9 @@
 
 Dates are YYYY-MM-DD. This project follows semantic versioning once it reaches 1.0.
 
-## 0.1.0 (not released)
+## 0.1.0 (2026-11-26)
 
-First complete build. Nothing has been published and nothing has been run on a live Google account.
+First complete build and first public release. It has been run once on one personal Gmail account; STATUS.md lists what is verified and what is not.
 
 ### Added
 
