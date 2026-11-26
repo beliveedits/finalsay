@@ -54,9 +54,9 @@ What never happens at all: sending an email. No file in `src/` contains a send c
 
 ## Install
 
-**Option A, copy a template Sheet.** [Make a copy](https://docs.google.com/spreadsheets/d/1jbdAclzRHwDlG3_HTqy22Lj9X7BOMD6DRSLsGFZrvhU/copy). The script comes along with the copy, so there is no pasting. Reload your copy, then choose **CRM > Set up**. The template was made on 27 Nov 2026 and checked as far as the copy being made and the CRM menu appearing. **CRM > Set up has not been run on a copy yet.**
+**Option A, copy a template Sheet.** [Make a copy](https://docs.google.com/spreadsheets/d/1jbdAclzRHwDlG3_HTqy22Lj9X7BOMD6DRSLsGFZrvhU/copy). The script comes along with the copy, so there is no pasting. Reload your copy, then choose **CRM > Set up**. The template was made on 27 Nov 2026. I made a copy of it with a second Google account of mine and ran **CRM > Set up** there on 27 Nov 2026: 11 self-checks passed, 0 failed, 4 skipped (AI and calendar were off, and two checks only run from CRM > More > Run self-check). It is still my own account, so a second person has not tried it.
 
-**Option B, paste the script.** About ten minutes, no tools needed. Follow [SETUP.md](SETUP.md).
+**Option B, paste the script.** No extra tools needed. Follow [SETUP.md](SETUP.md).
 
 Either way, the first run shows Google's "Google hasn't verified this app" screen, because this is your own copy of a script and not a store app. SETUP.md explains that screen and every permission.
 
@@ -100,7 +100,7 @@ The code talks to its data through one small adapter (`src/Store.gs`). ARCHITECT
 
 ## What is not verified yet
 
-On 26 Nov 2026 the main path was run once on one personal Gmail account: install, the permission screens, setup, the self-check, capturing a labelled thread, the Today list, approving in the Sheet, a reply draft saved inside the thread, and the phone page and board in desktop Chrome. One run on one account is evidence, not proof for every account.
+On 26 Nov 2026 the main path was run once on one personal Gmail account: install, the permission screens, setup, the self-check, capturing a labelled thread, the Today list, approving in the Sheet, a reply draft saved inside the thread, and the phone page and board in desktop Chrome. One run on one account is evidence, not proof for every account. On 27 Nov 2026 CRM > Set up was also run once on a copy of the template Sheet, using a second Google account of mine: 11 self-checks passed, 0 failed, 4 skipped. That is still the same person, so it does not count as a second user.
 
 Still not run against real Google services:
 
