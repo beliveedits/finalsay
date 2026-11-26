@@ -47,6 +47,11 @@ What happens without a click: new lead rows, last-contact dates, AI filling fiel
 What never happens without a click: stage changes, next steps, notes, reply drafts.
 What never happens at all: sending an email. No file in `src/` contains a send call, and a test fails the build if one is added.
 
+## Try it without installing
+
+- [Demo with made-up people](https://bhavesh09798-finalsay-demo.static.hf.space/index.html): the board and the phone page. Nothing is saved, sent or connected.
+- [Follow-Up Checker](https://vaghelabhavesh.com/follow-up-checker.html): paste leads from a Google Sheet or a CSV and it lists who needs a reply today, with the same rules as the Today list. It runs in your browser and makes no network calls, so the file stays on your computer.
+
 ## Install
 
 **Option A, copy a template Sheet.** [Make a copy](https://docs.google.com/spreadsheets/d/1jbdAclzRHwDlG3_HTqy22Lj9X7BOMD6DRSLsGFZrvhU/copy). The script comes along with the copy, so there is no pasting. Reload your copy, then choose **CRM > Set up**. The template was made on 27 Nov 2026 and checked as far as the copy being made and the CRM menu appearing. **CRM > Set up has not been run on a copy yet.**
