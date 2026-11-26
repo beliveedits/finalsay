@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 26 November 2026. Version 0.1.
+Last updated: 27 November 2026. Version 0.1.
 
 Finalsay is new. This page says plainly what has been run against real Google services and what has not. If something here is wrong for your account, please open an issue and paste the lines from the Self-check tab.
 
@@ -40,11 +40,11 @@ Three bugs were found by this run and fixed: half-ticked permissions were not ha
 6. **Email details**: threads where you already replied, HTML-only emails, send-as aliases. One two-message thread was read.
 7. **Platform notifications from no-reply senders.** The thread used in the test was a marketplace message notification that arrives from a reply address, and it became a lead. Notifications sent from no-reply addresses are skipped by design, so those would not become leads. Not tested.
 8. **Web endpoint** for forms (POST from another site, webhook tools), **proposal documents from a template**, **"Lock down for a team"**, the **pencil tint on waiting rows** (the bold ink on applied rows was seen; the tint was not clearly visible).
-9. **Narrow Gmail permission path**, **calendar capture**, **local AI page**, **MCP server**, **clasp**, **Hugging Face** hosting.
+9. **Narrow Gmail permission path**, **calendar capture**, **local AI page**, **MCP server**, **clasp**, **Hugging Face** hosting, and **CRM > Set up on a copy of the template Sheet** (the copy and the menu were checked, Set up was not).
 
 ## Known gaps
 
-- There is no template Sheet to copy yet. Install is by pasting (SETUP.md step 1).
+- There is a template Sheet to copy (made 27 November 2026). Making a copy brings the script along and the CRM menu appears. CRM > Set up has not been run on a copy yet, so pasting the script (SETUP.md step 1) is still the route that was followed on a real account.
 - Five fixed stages. English only. No database adapter, only the interface for one (ARCHITECTURE.md).
 - Three steps cannot be done by code, because Google only lets a signed-in person do them: approving the permission screen, deploying the web app address for the phone, and making an AI key.
 - The phone app has no offline mode and no notifications. Setup, the AI key, proposal documents and tokens are only in the Sheet menu.
