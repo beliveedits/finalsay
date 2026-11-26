@@ -1,6 +1,6 @@
 # Set up Finalsay
 
-About ten minutes. You need a Google account and a browser on a computer (not a phone) for the first setup.
+About ten minutes. You need a Google account and a browser on a computer (not a phone) for the first setup. **Faster: [make a copy of the template Sheet](https://docs.google.com/spreadsheets/d/1jbdAclzRHwDlG3_HTqy22Lj9X7BOMD6DRSLsGFZrvhU/copy).** The script comes with the copy, so you can skip step 1 and go straight to step 2. The template was checked only as far as the copy being made and the CRM menu appearing; CRM > Set up has not been run on a copy yet.
 
 Steps 1 to 5 and step 8 were followed once on a real personal Gmail account on 26 Nov 2026. The other steps have not been checked on a live account. Where a button name could differ from what you see, it says so.
 
