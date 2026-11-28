@@ -22,9 +22,10 @@ First complete build and first public release. It has been run once on one perso
 - One-click setup: **Set up** now also makes the Gmail label, asks once about daily automation, and runs a self-check.
 - Self-check (`CRM > More > Run self-check`, report in a Self-check tab): tests this copy against the real Google services and reports Pass, Fail or Skipped per line. The full run saves one draft to yourself and one small document and reuses them. It never sends or deletes.
 - **Set AI key** can switch AI on in the same step and asks the provider one test question.
+- Set up pressed twice in a row no longer fails the Self-check line. Both runs tried to make the Self-check tab and the slower one was refused; it now uses the tab that is already there (seen on a real copy on 27 Nov 2026; fixed and tested against stand-ins on 28 Nov 2026, not yet re-run live).
 - First live run on a real Google account (26 Nov 2026). Found and fixed: permissions that were only partly ticked on Google's screen (Set up now asks again, and the self-check has a Permissions line); a Yes to automation that failed was never asked again; the self-check report showed the day without the time. SETUP.md step 2 now describes the permission screens as they really are.
 - `dist/Finalsay.gs`: all script files in one, for installing with one paste (`npm run build`).
-- 125 tests against Node stand-ins for the Google services.
+- 127 tests against Node stand-ins for the Google services.
 - Brand kit: name research, logo set, tokens, brand guide.
 - Board look: dark glass with glowing gradients (lime, pink, violet), a light strip for today's numbers, and an "Answer first" card.
 
