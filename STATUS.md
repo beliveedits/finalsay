@@ -1,12 +1,12 @@
 # Status
 
-Last updated: 27 November 2026. Version 0.1.
+Last updated: 28 November 2026. Version 0.1.
 
 Finalsay is new. This page says plainly what has been run against real Google services and what has not. If something here is wrong for your account, please open an issue and paste the lines from the Self-check tab.
 
 ## Tests
 
-`npm test` runs 125 tests (28 core rules, 74 for the Apps Script files, 10 for the mail adapter, 10 checks on the files themselves, 3 for the MCP server). They run against small stand-ins for the Google services in `test/mocks/gas.js`. They check Finalsay's logic. They do not prove that Google behaves the way the stand-ins do.
+`npm test` runs 127 tests (28 core rules, 76 for the Apps Script files, 10 for the mail adapter, 10 checks on the files themselves, 3 for the MCP server). They run against small stand-ins for the Google services in `test/mocks/gas.js`. They check Finalsay's logic. They do not prove that Google behaves the way the stand-ins do.
 
 ## Verified live on 26 November 2026
 
@@ -45,7 +45,7 @@ Three bugs were found by this run and fixed: half-ticked permissions were not ha
 ## Known gaps
 
 - There is a template Sheet to copy (made 27 November 2026). Making a copy brings the script along and the CRM menu appears. On 27 November 2026 CRM > Set up was run once on a copy, with a second Google account of the author: 11 self-checks passed, 0 failed, 4 skipped (AI and calendar were off, and the draft and Docs checks only run from CRM > More > Run self-check). Email capture, AI and the Approve buttons were not run on the copy, and it is still the same person, not a second user. Pasting the script (SETUP.md step 1) is still the route that was followed end to end on a real account.
-- Pressing CRM > Set up twice in quick succession can make two runs collide, and one Self-check line then fails with a message that a sheet named Self-check already exists. A single run passes. Run it once and wait for the result.
+- Pressing CRM > Set up twice in quick succession made two runs collide on a real copy (27 November 2026): one Self-check line failed with a message that a sheet named Self-check already exists. The cause was that both runs looked for the Self-check tab, found none, and both tried to make it. The code now uses the tab the other run made (`ensureSheet_` in `src/Store.gs`). Two tests reproduce the collision against the stand-ins. This has **not** been run again on a real Google account, and the template Sheet and the v0.1.0 release file still carry the earlier code until they are refreshed. Until then, press Set up once and wait for the result.
 - Five fixed stages. English only. No database adapter, only the interface for one (ARCHITECTURE.md).
 - Three steps cannot be done by code, because Google only lets a signed-in person do them: approving the permission screen, deploying the web app address for the phone, and making an AI key.
 - The phone app has no offline mode and no notifications. Setup, the AI key, proposal documents and tokens are only in the Sheet menu.
