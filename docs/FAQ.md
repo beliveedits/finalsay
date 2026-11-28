@@ -49,7 +49,7 @@ It is already out. File > Download gives you Excel or CSV. Or just keep the Shee
 SETUP.md step 9. Forms post straight to a web address. Meta Lead Ads need a webhook tool in between.
 
 **Has it been tested?**
-It was run once on one real Google account on 26 Nov 2026 (see STATUS.md for what worked), and the logic has 125 automated tests that run against stand-ins for Google's services. AI, a real phone and several other parts have not been run live. The list is in [STATUS.md](../STATUS.md).
+It was run once on one real Google account on 26 Nov 2026 (see STATUS.md for what worked), and the logic has 127 automated tests that run against stand-ins for Google's services. AI, a real phone and several other parts have not been run live. The list is in [STATUS.md](../STATUS.md).
 
 **Is this a Google product?**
 No. It is an independent open-source project by Bhavesh Vaghela. It runs inside your Google account using Google's own scripting tool.
