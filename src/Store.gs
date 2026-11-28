@@ -92,7 +92,15 @@ var SheetStore = (function () {
   // ---------- setup ----------
   function ensureSheet_(name, headers) {
     var ss = ss_(), sh = ss.getSheetByName(name), created = false;
-    if (!sh) { sh = ss.insertSheet(name); created = true; }
+    if (!sh) {
+      try { sh = ss.insertSheet(name); created = true; }
+      catch (e) {
+        // Two runs at once (Set up pressed twice) can both find no such tab and both try to make it. Google then tells the
+        // slower one that the name is taken. The tab is there, so use it. Any other error is real and is passed on.
+        sh = ss.getSheetByName(name);
+        if (!sh) throw e;
+      }
+    }
     var have = headers_(sh);
     headers.forEach(function (h) {
       if (have.indexOf(h) < 0) { have.push(h); sh.getRange(1, have.length).setValue(h); }
