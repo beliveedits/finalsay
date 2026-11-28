@@ -195,6 +195,7 @@ function createHarness(opts = {}) {
     activeUser: 'owner@studio.example',
     effectiveUser: 'owner@studio.example',
     lockFree: true,
+    staleLookups: new Map(), insertSheetError: '',
     sheets: [], activeSheetName: 'Leads', activeRow: 2,
     toasts: [], alerts: [], alertAnswers: [], prompts: [], dialogs: [], menus: [], webAppUrl: null,
     allScopesGranted: true, authPrompts: 0,
@@ -209,8 +210,19 @@ function createHarness(opts = {}) {
 
   const book = {
     get activeRow() { return h.activeRow; },
-    getSheetByName: (n) => h.sheets.find((s) => s.name === n) || null,
-    insertSheet: (n) => { const s = new Sheet(n, book); h.sheets.push(s); return s; },
+    getSheetByName: (n) => {
+      // h.staleLookups: { 'Tab name': times } makes the next lookups answer "no such tab" although it exists, which is
+      // what a second run sees when the first run makes the tab a moment after the second one looked.
+      const stale = h.staleLookups.get(n) || 0;
+      if (stale > 0) { h.staleLookups.set(n, stale - 1); return null; }
+      return h.sheets.find((s) => s.name === n) || null;
+    },
+    // Google refuses a second tab with the same name, and says so in these words.
+    insertSheet: (n) => {
+      if (h.insertSheetError) throw new Error(h.insertSheetError);
+      if (h.sheets.some((s) => s.name === n)) throw new Error('A sheet with the name "' + n + '" already exists. Please enter another name.');
+      const s = new Sheet(n, book); h.sheets.push(s); return s;
+    },
     getActiveSheet: () => h.sheets.find((s) => s.name === h.activeSheetName) || null,
     getSpreadsheetTimeZone: () => h.tz,
     toast: (msg) => { h.toasts.push(msg); },
