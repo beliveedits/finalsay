@@ -52,6 +52,41 @@ test('first-time setup makes the five tabs, the headers and the settings, and is
   assert.equal(h.triggers.length, 0, 'setup does not turn automation on unless you say yes');
 });
 
+test('Set up pressed twice: a tab the other run made a moment ago is used, and nothing fails', () => {
+  // Seen on a real copy on 27 Nov 2026: two overlapping runs both looked for the Self-check tab, both saw none, and
+  // the slower one failed with "a sheet named Self-check already exists". The mock now refuses a duplicate name as Google does.
+  const h = createHarness({ tz: TZ }).load();
+  h.fakeMail();
+  assert.throws(() => h.book.insertSheet('Leads') && h.book.insertSheet('Leads'), /already exists/, 'the mock behaves like Google');
+  h.sheets.length = 0;
+  h.staleLookups.set('Self-check', 1); // the second run looks first, and sees nothing yet
+  setUp();
+  h.staleLookups.set('Self-check', 0);
+  const first = h.sheets.filter((s) => s.name === 'Self-check').length;
+  assert.equal(first, 1, 'one Self-check tab');
+  // The collision itself: the tab exists, but this run's first look says it does not.
+  h.staleLookups.set('Self-check', 1);
+  const r = selfCheck_(false);
+  assert.equal(r.failed, 0, 'no line fails: ' + JSON.stringify(r.results.filter((x) => x.result === 'Fail')));
+  assert.equal(h.sheets.filter((s) => s.name === 'Self-check').length, 1, 'still one Self-check tab, no copy');
+  assert.equal(h.sheet('Self-check').rows().length, r.results.length, 'the report is written once, in that tab');
+  assert.ok(h.sheet('Self-check').rows().some((x) => x.Check === 'Text that looks like a formula stays text' && x.Result === 'Pass'));
+  // The same for the tabs Set up itself makes.
+  ['Leads', 'Today', 'Approvals', 'Activity', 'Settings'].forEach((n) => h.staleLookups.set(n, 1));
+  const again = setUp();
+  assert.deepEqual(again.created, [], 'nothing is made twice');
+  assert.equal(again.selfCheck.failed, 0);
+  ['Leads', 'Today', 'Approvals', 'Activity', 'Settings', 'Self-check'].forEach((n) =>
+    assert.equal(h.sheets.filter((s) => s.name === n).length, 1, 'one "' + n + '" tab'));
+});
+
+test('a real failure to make a tab is still reported, not hidden', () => {
+  const h = createHarness({ tz: TZ }).load();
+  h.fakeMail();
+  h.insertSheetError = 'Service error: Spreadsheets';
+  assert.throws(() => setUp(), /Service error: Spreadsheets/);
+});
+
 test('the CRM menu has the agreed items', () => {
   const h = createHarness({ tz: TZ }).load();
   onOpen();
