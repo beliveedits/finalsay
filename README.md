@@ -13,7 +13,7 @@ Label a client email in Gmail. Finalsay adds the lead to a Google Sheet, keeps a
 
 Free. Open source (MIT). No server to host and no account to create with anyone. The Sheet is the database, and it is yours.
 
-> **Version 0.1. Run once on one real Google account (26 Nov 2026).** There, setup, email capture, the Today list, approvals, reply drafts and the phone page worked, and the built-in self-check passed 13 of 13 checks that applied. The logic also passes 125 automated tests against stand-ins. AI, a real phone and several other parts are still untested. Read [What is not verified yet](#what-is-not-verified-yet) before you rely on it.
+> **Version 0.1. Run once on one real Google account (26 Nov 2026).** There, setup, email capture, the Today list, approvals, reply drafts and the phone page worked, and the built-in self-check passed 13 of 13 checks that applied. The logic also passes 127 automated tests against stand-ins. AI, a real phone and several other parts are still untested. Read [What is not verified yet](#what-is-not-verified-yet) before you rely on it.
 
 ## What you get
 
@@ -132,7 +132,7 @@ The full list with details is in [STATUS.md](STATUS.md).
 ## Run the tests
 
 ```
-npm test          # 125 tests, Node 20 or newer, no dependencies to install
+npm test          # 127 tests, Node 20 or newer, no dependencies to install
 npm run check     # syntax check of every script file
 ```
 
